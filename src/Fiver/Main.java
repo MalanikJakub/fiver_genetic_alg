@@ -32,16 +32,16 @@ public class Main {
         newPop = new Individual[popSize];
         offspringPop = new Individual[2];
 
-        totEvals = initPop(oldPop);
+        totEvals = initPop(oldPop);         // initialize population.
 
         getStats(oldPop);
         reportResults(totEvals);
         printBest(oldPop);
 
         ArrayList<Individual> initialFront = new ArrayList<Individual>();
-        initialFront.add(oldPop[indbest]);
+        initialFront.add(oldPop[indbest]);  // elitism - add best individual to the new population
 
-        evolvePop(oldPop, totEvals);
+        evolvePop(oldPop, totEvals);        // apply evolution on the population
 
         getStats(oldPop);
         ArrayList<Individual> finalFront = new ArrayList<Individual>();
@@ -52,6 +52,11 @@ public class Main {
 
     }
 
+    /**
+     * Randomly initialize population.
+     * @param pop Array of individuals to initialize
+     * @return number of evaluations
+     */
     public static int initPop(Individual[] pop) {
         int evals = 0;
         for (int i = 0; i < popSize; i++) {
@@ -62,6 +67,11 @@ public class Main {
         return evals;
     }
 
+    /**
+     * Evolves the population using crossover and mutation
+     * @param pop population to be evolved
+     * @param totEvals current total of evaluations
+     */
     public static void evolvePop(Individual[] pop, int totEvals) {
         while (totEvals < evaluations) {
             int generated = 0;
@@ -119,6 +129,12 @@ public class Main {
         return chosen;
     }
 
+    /**
+     * Tournaments selection where from number of randomly selected individuals
+     * is chosen one to be used in the next population.
+     * @param p population
+     * @return index of the winning individual
+     */
     public static int tournamentSelection(Individual[] p) {
         int index;
         int winnerIndex = (int) (Math.random() * popSize);
@@ -163,7 +179,6 @@ public class Main {
     }
 
     public static void printBest(Individual[] p) {
-
         // Print the values of x on standard output.
         System.out.println("\tbest solution fitness: " + p[indbest].fitness);
         p[indbest].printFlipMap();
@@ -173,11 +188,17 @@ public class Main {
 
 class Individual {
 
-    public static int rows;
-    public static int cols;
-    public boolean[][] flipMap;
-    public double fitness;
+    public static int rows;         // number of rows
+    public static int cols;         // number of columns
+    public boolean[][] flipMap;     // map of "player" turns on the game board
+    public double fitness;          // fitness of the individual
 
+    /**
+     * Constructor of Individual without parameters generates random
+     * individual which consist of 2D boolean array. The array represents
+     * the game board and true values represent position where squares are
+     * chosen for play.
+     */
     public Individual() {
         flipMap = new boolean[rows][cols];
         for (int i = 0; i < rows; i++) {
@@ -189,10 +210,19 @@ class Individual {
         }
     }
 
+    /**
+     * Overloaded constructor for cases when there is no need to generate random
+     * positions.
+     * @param b dummy parameter
+     */
     public Individual(boolean b) {
         flipMap = new boolean[rows][cols];
     }
 
+    /**
+     * Overriden clone method for Individual.
+     * @return
+     */
     @Override
     public Individual clone() {
         Individual ind = new Individual(false);
@@ -203,6 +233,9 @@ class Individual {
         return ind;
     }
 
+    /**
+     * Calcultates fitness of the individual and stores it in the individual.
+     */
     public void calcFitness() {
         int flipped = 0;
         int flips = 0;
@@ -218,13 +251,18 @@ class Individual {
                 }
             }
         }
-        if (1.0 / flips < 1) {
+        if (1.0 / flips < 1) {       // value behind decimal point represents number of flipped positions.
             this.fitness = flipped + 1.0 / flips;
         } else {
             this.fitness = flipped;
         }
     }
 
+    /**
+     * Creates and returns representation of the board after flipping positions
+     * specified by the flipMap.
+     * @return
+     */
     public boolean[][] getBoard() {
         boolean[][] board = new boolean[rows][cols];
         for (int i = 0; i < rows; i++) {
@@ -234,10 +272,16 @@ class Individual {
                 }
             }
         }
-
         return board;
     }
 
+    /**
+     * Applies one player turn on the board. Negates position of [row][column]
+     * and also all adjacent fields.
+     * @param b 2D boolean array representing game board
+     * @param r row of the turn
+     * @param c column of the turn
+     */
     public void flip(boolean[][] b, int r, int c) {
         b[r][c] = !b[r][c];
         if (r > 0) {
@@ -254,6 +298,9 @@ class Individual {
         }
     }
 
+    /**
+     * Prints out the board.
+     */
     public void printBoard() {
         boolean[][] board = this.getBoard();
         for (int i = 0; i < rows; i++) {
@@ -269,6 +316,9 @@ class Individual {
         System.out.println("");
     }
 
+    /**
+     * Prints out the flipMap.
+     */
     public void printFlipMap() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -283,6 +333,12 @@ class Individual {
         System.out.println("");
     }
 
+    /**
+     * Executes crossover of this individual with another specified individual.
+     * Chance of swapping of genes between the two individuals
+     * @param mate individual for crossover
+     * @return array with 2 individuals
+     */
     public Individual[] crossover(Individual mate) {
         Individual[] I = new Individual[2];
         I[0] = this.clone();
@@ -307,6 +363,9 @@ class Individual {
         return I;
     }
 
+    /**
+     * Mutation of the individual. With probability pM the cells of the flipMap are negated.
+     */
     public void mutation() {
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
